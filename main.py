@@ -71,30 +71,26 @@ def extract_mfcc_features(file_name):
 features = []
 full_database_path = 'UrbanSound8K/audio'
 
-# Iterate through each sound file and extract the features
+# extract the mfccs for evrey file in the database 
 for index, row in dataFrame.iterrows():
     file_name = os.path.join(os.path.abspath(full_database_path),'fold'+str(row["fold"])+'/',str(row["slice_file_name"]))
     class_label = row["class"]
     data = extract_mfcc_features(file_name)
     features.append([data, class_label])
 
-# Convert into a Panda dataframe
-print('DFF done and logged')
-featuresdf = pd.DataFrame(features, columns=['feature', 'class_label'])
-featuresdf.head()
-featuresdf.iloc[0]['feature']
 
+print('Finished Extracting all MFCCS')
+featuresdf = pd.DataFrame(features, columns=['feature', 'class_label'])
 
 
 ################################ Defining our input and output data sets ################################
-#Convert features and corresponding classification labels into numpy arrays
 X = np.array(featuresdf.feature.tolist()) # this is an array of your input features
 y = np.array(featuresdf.class_label.tolist()) # this is an array of the answers which could be used to compare at the output
 #of the neural network 
 
 
 
-# Encode the classification labels
+# Assign claasifications a uniqur binary number  
 le = LabelEncoder()
 yy = to_categorical(le.fit_transform(y)) # returns a binary matrix of the output array
 
@@ -125,7 +121,7 @@ def create_sequential_neural_network( ):
     model.add( Dense(num_labels) )  
     model.add( Activation('softmax') )
 
-    # Compile the model
+    # make the model
     model.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
     return model
 
