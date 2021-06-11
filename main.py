@@ -60,17 +60,8 @@ librosa.display.waveplot(librosa_audio, sr=librosa_sample_rate)  # this actually
 
 ################################ Extract MFCCs ################################
 
-mfccs = librosa.feature.mfcc(y=librosa_audio, sr=librosa_sample_rate, n_mfcc=30)
-print(mfccs.shape)
-
-plt.figure(figsize=(8, 8))
-librosa.display.specshow(mfccs, sr=librosa_sample_rate, x_axis='time')
-plt.savefig('MFCCs.png')
-experiment.log_image('MFCCs.png')
-
-
 # function that extracts mean functions
-def extract_features(file_name):
+def extract_mfcc_features(file_name):
     audio, sample_rate = librosa.load(file_name, res_type='kaiser_fast')
     mfccs = librosa.feature.mfcc(y=audio, sr=sample_rate, n_mfcc=40)
     mfccs_processed = np.mean(mfccs.T, axis=0)
@@ -78,15 +69,13 @@ def extract_features(file_name):
 
 
 features = []
-fulldatasetpath = 'UrbanSound8K/audio'
-# Iterate through each sound file and extract the features
+full_database_path = 'UrbanSound8K/audio'
 
+# Iterate through each sound file and extract the features
 for index, row in dataFrame.iterrows():
-    file_name = os.path.join(os.path.abspath(fulldatasetpath),'fold'+str(row["fold"])+'/',str(row["slice_file_name"]))
-    # file_name = files[path]
+    file_name = os.path.join(os.path.abspath(full_database_path),'fold'+str(row["fold"])+'/',str(row["slice_file_name"]))
     class_label = row["class"]
-    data = extract_features(file_name)
-    #print(index)
+    data = extract_mfcc_features(file_name)
     features.append([data, class_label])
 
 # Convert into a Panda dataframe
@@ -120,17 +109,13 @@ x_train, x_test, y_train, y_test = train_test_split(X, yy, test_size=0.2, random
 
 
 ################################ Build your sequential Neural Network ################################
-num_labels = yy.shape[1]
-import numpy
-filter_size = 2
-
+num_labels = yy.shape
 tf.keras.backend.clear_session() # if you do not clear,the previous models will still be there 
 # and you will continue to build on the models.the line above clears all the models.
 
-def build_model_graph( input_shape = (30,) ):
+def create_sequential_neural_network( ):
     model = Sequential()
     model.add( Dense(256, input_shape = (30,)) )# you have to define the input shape for the first layer 
-    #model.add( Dense(256) ) # this was the line of code in the example but it does not work
     model.add( Activation('relu') )
     model.add( Dropout(0.5) )
 
@@ -148,30 +133,30 @@ def build_model_graph( input_shape = (30,) ):
     return model
 
 # uses the function from above to define the the actual layer 
-model = build_model_graph() 
+neural_network = create_sequential_neural_network() 
 
 # Display model architecture summary 
-model.summary()
+neural_network.summary()
 
 ################################ Train and Test the neural Network ################################
 
 #Calculate pre-training accuracy 
-score = model.evaluate(x_test, y_test, verbose=0)
-accuracy = 100*score[1]
-print("pre-training accuracy: %.4f%%" % accuracy)
+pre_training_score = neural_network.evaluate(x_test, y_test, verbose=0)
+pre_training_accuracy = pre_traing_score[1] *100
+print("pre training accuracy: %.4f%%" % pre_training_accuracy)
 
-num_epochs = 100
-num_batch_size = 32
 
 #The fit function will train your neural network
-model.fit(x_train, y_train, batch_size=num_batch_size, epochs=num_epochs, validation_data=(x_test, y_test), verbose=1)
-
+neural_network.fit(x_train, y_train, batch_size=32, epochs=100, validation_data=(x_test, y_test), verbose=1)
 
 
 # Evaluating the model on the training  set 
-score = model.evaluate(x_train, y_train, verbose=0)
-print("Training Accuracy: {0:.2%}".format(score[1]))
+traing_score = neural_network.evaluate(x_train, y_train, verbose=0)
+training_accuracy = traing_score [1] *100
+print("post training accuracy: %.4f%%" % training_accuracy)
+
 
 #evaluating the model in the testing set
-score = model.evaluate(x_test, y_test, verbose=0)
-print("Testing Accuracy: {0:.2%}".format(score[1]))
+test_score = neural_network.evaluate(x_test, y_test, verbose=0)
+test_accuracy = test_score [1] *100
+print("post training accuracy: %.4f%%" % test_accuracy)
