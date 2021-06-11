@@ -99,12 +99,9 @@ le = LabelEncoder()
 yy = to_categorical(le.fit_transform(y)) # returns a binary matrix of the output array
 
 
-# split the dataset 
-from sklearn.model_selection import train_test_split 
-
 #randomly splits the  input features and the outputs into two sets a training set and a test set 
 #The test set ~20% will be used to test our neural network, and the othe 80% will used to train it 
-x_train, x_test, y_train, y_test = train_test_split(X, yy, test_size=0.2, random_state = 127)
+x_train, x_test, y_train, y_test = train_test_split(X, yy, test_size=0.2, random_state = 69)
 
 
 
